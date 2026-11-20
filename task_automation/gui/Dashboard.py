@@ -1,4 +1,4 @@
-
+from datetime import datetime
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog, messagebox
@@ -8,15 +8,17 @@ from automation.reminder_manager import ReminderManager
 class SmartTaskDashboard:
 
     def __init__(self, root):
-        self.reminder_manager = ReminderManager()
+        
 
         self.root = root
+        
         self.root.title("SmartTask - Automation System")
         self.root.geometry("1100x700")
         self.root.minsize(850, 550)
         self.root.configure(bg="#101827")
 
         self.selected_folder = None
+        self.reminder_manager = ReminderManager()
         self.create_sidebar()
         self.create_main_area()
 
@@ -87,6 +89,7 @@ class SmartTaskDashboard:
         )
 
         self.show_page("Dashboard")
+        self.root.after(1000, self.check_due_reminders)
 
     # Page content
     def show_page(self, page_name):
@@ -119,6 +122,9 @@ class SmartTaskDashboard:
 
         elif page_name == "File Organizer":
             self.create_file_organizer_page()
+
+        elif page_name == "Reminders":
+            self.create_reminder_page()
         else:
             tk.Label(
                 self.main,
@@ -127,6 +133,8 @@ class SmartTaskDashboard:
                 fg="#AAB7C8",
                 bg="#101827"
                 ).pack(anchor="w", pady=30)
+   
+   
     # Dashboard cards
     def create_dashboard_cards(self):
 
@@ -308,151 +316,163 @@ class SmartTaskDashboard:
 
         except (ValueError, OSError) as error:
             messagebox.showerror("Error",str(error)) 
+    
+     
     def create_reminder_page(self):
 
         # Clear previous page
-       for widget in self.main.winfo_children():
-           widget.destroy()
+        for widget in self.main.winfo_children():
+            widget.destroy()
 
-       title = tk.Label(
+        title = tk.Label(
             self.main,
-            text="Reminders",
-            font=("Arial", 20, "bold"),
+            text="Reminder Manager",
+            font=("Arial", 24, "bold"),
             fg="white",
             bg="#101827"
-       )
-       title.pack(pady=20)
-
-    tk.Label(
-        self.main,
-        text="Reminder Title",
-        fg="white",
-        bg="#101827"
-    ).pack()
-
-    self.reminder_title = tk.Entry(
-        self.main,
-        font=("Arial", 12),
-        width=35
-    )
-    self.reminder_title.pack(pady=8)
-
-    tk.Label(
-        self.main,
-        text="Date (YYYY-MM-DD)",
-        fg="white",
-        bg="#101827"
-    ).pack()
-
-    self.reminder_date = tk.Entry(
-        self.main,
-        font=("Arial", 12),
-        width=35
-    )
-    self.reminder_date.pack(pady=8)
-
-    tk.Label(
-        self.main,
-        text="Time (HH:MM, 24-hour)",
-        fg="white",
-        bg="#101827"
-    ).pack()
-
-    self.reminder_time = tk.Entry(
-        self.main,
-        font=("Arial", 12),
-        width=35
-    )
-    self.reminder_time.pack(pady=8)
-
-    tk.Button(
-        self.main,
-        text="Add Reminder",
-        bg="#2563EB",
-        fg="white",
-        command=self.add_reminder
-    ).pack(pady=12)
-
-    self.reminder_list = tk.Listbox(
-        self.main,
-        width=65,
-        height=10
-    )
-    self.reminder_list.pack(pady=15)
-
-    tk.Button(
-        self.main,
-        text="Delete Selected",
-        command=self.delete_reminder
-    ).pack(pady=5)
-
-    self.refresh_reminders()
-
-
-def add_reminder(self):
-
-    title = self.reminder_title.get().strip()
-    date = self.reminder_date.get().strip()
-    time = self.reminder_time.get().strip()
-
-    if not title:
-        messagebox.showwarning("Warning", "Enter a reminder title.")
-        return
-
-    try:
-        reminder = self.reminder_manager.add_reminder(
-            title, date, time
         )
+        title.pack(pady=20)
 
-        if reminder["datetime"] <= datetime.now():
-            self.reminder_manager.delete_reminder(
-                len(self.reminder_manager.get_reminders()) - 1
-            )
-            messagebox.showwarning(
-                "Invalid time",
-                "Please enter a future date and time."
-            )
-            return
+        tk.Label(
+            self.main,
+            text="Reminder Title",
+            fg="white",
+            bg="#101827"
+        ).pack()
 
-        messagebox.showinfo("Success", "Reminder added successfully!")
+        self.reminder_title = tk.Entry(
+            self.main,
+            font=("Arial", 12),
+            width=35
+        )
+        self.reminder_title.pack(pady=8)
+
+        tk.Label(
+            self.main,
+            text="Date (YYYY-MM-DD)",
+            fg="white",
+            bg="#101827"
+        ).pack()
+
+        self.reminder_date = tk.Entry(
+            self.main,
+            font=("Arial", 12),
+            width=35
+        )
+        self.reminder_date.pack(pady=8)
+
+        tk.Label(
+            self.main,
+            text="Time (HH:MM, 24-hour)",
+            fg="white",
+            bg="#101827"
+        ).pack()
+
+        self.reminder_time = tk.Entry(
+            self.main,
+            font=("Arial", 12),
+            width=35
+        )
+        self.reminder_time.pack(pady=8)
+
+        tk.Button(
+            self.main,
+            text="Add Reminder",
+            bg="#2563EB",
+            fg="white",
+            command=self.add_reminder
+        ).pack(pady=12)
+
+        self.reminder_list = tk.Listbox(
+            self.main,
+            width=65,
+            height=10
+        )
+        self.reminder_list.pack(pady=15)
+
+        tk.Button(
+            self.main,
+            text="Delete Selected",
+            command=self.delete_reminder
+        ).pack(pady=5)
 
         self.refresh_reminders()
 
-    except ValueError:
-        messagebox.showerror(
-            "Invalid Input",
-            "Enter date as YYYY-MM-DD and time as HH:MM."
-        )
+
+    def add_reminder(self):
+
+        title = self.reminder_title.get().strip()
+        date = self.reminder_date.get().strip()
+        time = self.reminder_time.get().strip()
+
+        if not title:
+            messagebox.showwarning("Warning", "Enter a reminder title.")
+            return
+
+        try:
+            reminder = self.reminder_manager.add_reminder(
+                title, date, time
+            )
+
+            if reminder["datetime"] <= datetime.now():
+                self.reminder_manager.delete_reminder(
+                    len(self.reminder_manager.get_reminders()) - 1
+                )
+                messagebox.showwarning(
+                    "Invalid time",
+                    "Please enter a future date and time."
+                )
+                return
+
+            messagebox.showinfo("Success", "Reminder added successfully!")
+
+            self.refresh_reminders()
+
+        except ValueError:
+            messagebox.showerror(
+                "Invalid Input",
+                "Enter date as YYYY-MM-DD and time as HH:MM."
+            )
+    def check_due_reminders(self):
+
+        due_reminders = self.reminder_manager.check_reminders()
+
+        for reminder in due_reminders:
+            messagebox.showinfo(
+                "Reminder Alert",
+                f"Reminder: {reminder['title']}"
+            )
+
+        self.root.after(1000, self.check_due_reminders)
+
+    def refresh_reminders(self):
+
+        self.reminder_list.delete(0, tk.END)
+
+        for reminder in self.reminder_manager.get_reminders():
+
+            display = (
+                reminder["title"] + " - " +
+                reminder["datetime"].strftime("%Y-%m-%d %H:%M")
+            )
+
+            self.reminder_list.insert(tk.END, display)
 
 
-def refresh_reminders(self):
+    def delete_reminder(self):
 
-    self.reminder_list.delete(0, tk.END)
+        selected = self.reminder_list.curselection()
 
-    for reminder in self.reminder_manager.get_reminders():
+        if not selected:
+            messagebox.showwarning(
+                "Warning",
+                "Select a reminder to delete."
+            )
+            return
 
-        display = (
-            reminder["title"] + " - " +
-            reminder["datetime"].strftime("%Y-%m-%d %H:%M")
-        )
+        self.reminder_manager.delete_reminder(selected[0])
 
-        self.reminder_list.insert(tk.END, display)
-
-
-def delete_reminder(self):
-
-    selected = self.reminder_list.curselection()
-
-    if not selected:
-        messagebox.showwarning(
-            "Warning",
-            "Select a reminder to delete."
-        )
-        return
-
-    self.reminder_manager.delete_reminder(selected[0])
-
-    self.refresh_reminders()
+        self.refresh_reminders()
 
 
         
