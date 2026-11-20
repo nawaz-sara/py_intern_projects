@@ -1,3 +1,4 @@
+from automation.website_launcher import WebsiteLauncher
 from datetime import datetime
 import tkinter as tk
 from tkinter import ttk
@@ -19,8 +20,11 @@ class SmartTaskDashboard:
 
         self.selected_folder = None
         self.reminder_manager = ReminderManager()
+        self.website_launcher = WebsiteLauncher()
         self.create_sidebar()
         self.create_main_area()
+
+        
 
     # Sidebar
     def create_sidebar(self):
@@ -125,6 +129,10 @@ class SmartTaskDashboard:
 
         elif page_name == "Reminders":
             self.create_reminder_page()
+
+        elif page_name == "Website Launcher":
+            self.create_website_launcher_page()
+
         else:
             tk.Label(
                 self.main,
@@ -473,6 +481,88 @@ class SmartTaskDashboard:
         self.reminder_manager.delete_reminder(selected[0])
 
         self.refresh_reminders()
+
+
+    def create_website_launcher_page(self):
+
+        for widget in self.main.winfo_children():
+            widget.destroy()
+
+        title = tk.Label(
+            self.main,
+            text="Website Launcher",
+            font=("Arial", 24, "bold"),
+            fg="white",
+            bg="#101827"
+        )
+        title.pack(pady=20)
+
+        # URL input
+        tk.Label(
+            self.main,
+            text="Enter Website URL",
+            fg="white",
+            bg="#101827",
+            font=("Arial", 12)
+        ).pack()
+
+        self.website_entry = tk.Entry(
+            self.main,
+            font=("Arial", 12),
+            width=40
+        )
+        self.website_entry.pack(pady=10)
+
+        # Open website button
+        tk.Button(
+            self.main,
+            text="Open Website",
+            bg="#2563EB",
+            fg="white",
+            command=self.open_custom_website
+        ).pack(pady=10)
+
+        # Popular websites
+        tk.Label(
+            self.main,
+            text="Popular Websites",
+            font=("Arial", 18, "bold"),
+            fg="white",
+            bg="#101827"
+        ).pack(pady=20)
+
+        for name in self.website_launcher.get_websites():
+
+            tk.Button(
+                self.main,
+                text=name,
+                bg="#22334D",
+                fg="white",
+                width=25,
+                command=lambda n=name: self.open_saved_website(n)
+            ).pack(pady=5)
+
+
+    def open_custom_website(self):
+
+        url = self.website_entry.get().strip()
+
+        if not url:
+            messagebox.showwarning(
+                "Warning",
+                "Please enter a website URL."
+            )
+            return
+
+        self.website_launcher.open_website(url)
+
+
+    def open_saved_website(self, name):
+
+        url = self.website_launcher.get_websites()[name]
+
+        self.website_launcher.open_website(url)
+
 
 
         
